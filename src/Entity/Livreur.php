@@ -9,6 +9,9 @@ use App\Repository\LivreurRepository;
 #[ORM\Entity(repositoryClass: LivreurRepository::class)]
 class Livreur extends User
 {
+    public function __construct(){
+        $this->roles =["ROLE_LIVREUR"];
+    }
 
     #[ORM\Column(type: 'string', length: 255)]
     private $matricule;

@@ -4,9 +4,27 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
+use ApiPlatform\Core\Annotation\ApiResource;
+use App\Controller\EmailValidatorController;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Serializer\Annotation\SerializedName;
+
+#[ApiResource(
+    collectionOperations:[
+        "EMAILVALIDATE"=>[
+            "method"=>"PATCH",
+            "deserialize"=>false,
+            "path"=>"/users/validate/{token}",
+            "controller"=>EmailValidatorController::class,
+        ]
+        ],
+    itemOperations:[
+        "GET","PUT","PATCH"
+    ]
+)]
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\InheritanceType("JOINED")]
@@ -42,8 +60,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(["client:read","client:write"])]
     protected $telephone;
     
+    
+    #[Groups(["client:write"])]
+    #[SerializedName("password")]
     protected $plainPassword;
 
+    #[ORM\Column(type: 'string', length: 255)]
+    protected $token;
+
+    #[ORM\Column(type: 'boolean')]
+    protected $is_enable;
+
+    #[ORM\Column(type: 'date')]
+    protected $expire;
+
+    public function __construct(){
+        $this->is_enable = false;
+        $this->generateToken();
+        $this->roles;
+    }
+
+    public function generateToken(){
+        $this->expire = new \DateTime('+1 day');
+        $this->token =rtrim(strtr(base64_encode(random_bytes(64)),'+/','- '),'=');
+    }
     public function getId(): ?int
     {
         return $this->id;
@@ -158,6 +198,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPlainPassword(string $plainPassword): self
     {
         $this->plainPassword = $plainPassword;
+
+        return $this;
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    public function setToken(string $token): self
+    {
+        $this->token = $token;
+
+        return $this;
+    }
+
+    public function isIsEnable(): ?bool
+    {
+        return $this->is_enable;
+    }
+
+    public function setIsEnable(bool $is_enable): self
+    {
+        $this->is_enable = $is_enable;
+
+        return $this;
+    }
+
+    public function getExpire(): ?\DateTimeInterface
+    {
+        return $this->expire;
+    }
+
+    public function setExpire(\DateTimeInterface $expire): self
+    {
+        $this->expire = $expire;
 
         return $this;
     }

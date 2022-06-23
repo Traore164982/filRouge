@@ -9,5 +9,7 @@ use App\Repository\GestionnaireRepository;
 #[ORM\Entity(repositoryClass: GestionnaireRepository::class)]
 class Gestionnaire extends User
 {
-
+    public function __construct(){
+        $this->roles =["ROLE_GESTIONNAIRE"];
+    }
 }
