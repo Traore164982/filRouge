@@ -12,6 +12,13 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 
+
+
+#[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\InheritanceType("JOINED")]
+#[ORM\DiscriminatorColumn(name:"type",type:"string")]
+#[ORM\DiscriminatorMap(["gestionnaire"=>"Gestionnaire","client"=>"Client","livreur"=>"Livreur"])]
+
 #[ApiResource(
     collectionOperations:[
         "EMAILVALIDATE"=>[
@@ -25,11 +32,6 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
         "GET","PUT","PATCH"
     ]
 )]
-
-#[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\InheritanceType("JOINED")]
-#[ORM\DiscriminatorColumn(name:"type",type:"string")]
-#[ORM\DiscriminatorMap(["gestionnaire"=>"Gestionnaire","client"=>"Client","livreur"=>"Livreur"])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -37,31 +39,69 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'integer')]
     protected $id;
     
-    #[Groups(["client:read","client:write"])]
+    #[Groups([
+        "client:read",
+        "client:write",
+        "gestionnaire:read",
+        "gestionnaire:write",
+        "livreur:read",
+        "livreur:write"
+        ])]
     #[ORM\Column(type: 'string', length: 180, unique: true)]
     protected $email;
 
     #[ORM\Column(type: 'json')]
     protected $roles = [];
 
-    #[Groups(["client:read","client:write"])]
+    #[Groups([
+        "client:read",
+        "client:write",
+        "gestionnaire:read",
+        "gestionnaire:write",
+        "livreur:read",
+        "livreur:write"
+        ])]
     #[ORM\Column(type: 'string')]
     protected $password;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["client:read","client:write"])]
+    #[Groups([
+        "client:read",
+        "client:write",
+        "gestionnaire:read",
+        "gestionnaire:write",
+        "livreur:read",
+        "livreur:write"
+        ])]
     protected $nom;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["client:read","client:write"])]
+    #[Groups([
+        "client:read",
+        "client:write",
+        "gestionnaire:read",
+        "gestionnaire:write",
+        "livreur:read",
+        "livreur:write"
+        ])]
     protected $prenom;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["client:read","client:write"])]
+    #[Groups([
+        "client:read",
+        "client:write",
+        "gestionnaire:read",
+        "gestionnaire:write",
+        "livreur:read",
+        "livreur:write"])]
     protected $telephone;
     
     
-    #[Groups(["client:write"])]
+    #[Groups([
+        "client:write",
+        "livreur:write",
+        "gestionnaire:write",
+        ])]
     #[SerializedName("password")]
     protected $plainPassword;
 
@@ -77,7 +117,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct(){
         $this->is_enable = false;
         $this->generateToken();
-        $this->roles;
     }
 
     public function generateToken(){

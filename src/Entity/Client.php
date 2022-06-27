@@ -42,8 +42,12 @@ class Client extends User
     #[Groups(["client:read","client:write"])]
     #[ORM\Column(type: 'string', length: 255)]
     private $adresse;
-    protected $roles =["ROLE_CLIENT"];
 
+    
+    public function __construct(){
+        parent::__construct();
+        $this->roles = ["ROLE_CLIENT"];
+    }
     public function getAdresse(): ?string
     {
         return $this->adresse;
