@@ -36,7 +36,7 @@ class Zone
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private $id;
+    protected $id;
     #[Groups([
         "zone:read",
         "zone:write"

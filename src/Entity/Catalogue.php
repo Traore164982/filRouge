@@ -6,14 +6,14 @@ use ApiPlatform\Core\Annotation\ApiResource;
 
 #[ApiResource(
     collectionOperations:[
-        "complements"=>[
+        "catalogue"=>[
             'method'=>'get',
-            'path'=>'/complements'
+            'path'=>'/catalogue'
         ]
     ],
     itemOperations:[]
 )]
-class Complement
+class Catalogue
 {
 
 }

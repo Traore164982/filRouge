@@ -2,11 +2,37 @@
 
 namespace App\Entity;
 
-use App\Repository\CommandeRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Entity\Produit;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\CommandeRepository;
+use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Core\Annotation\ApiResource;
+use DateTime;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 
+#[ApiResource(
+    attributes:[
+        "pagination_enabled"=>true,
+        "pagination_items_per_page"=>5
+    ],
+    normalizationContext:[
+        "groups"=>[
+            "commande:read",
+        ]
+    ],
+    denormalizationContext:[
+            "groups"=>[
+                "commande:write",
+            ]
+    ],
+    collectionOperations:[
+        "GET","POST"
+    ],
+    itemOperations:[
+        "PUT","PATCH","GET"
+    ]
+)]
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
 class Commande
 {
@@ -15,14 +41,56 @@ class Commande
     #[ORM\Column(type: 'integer')]
     private $id;
 
+    #[Groups(
+        [
+            "commande:read",
+            "commande:write",
+        ]
+    )]
     #[ORM\Column(type: 'string', length: 255)]
-    private $etat;
+    private $etat="En Attente";
 
+    #[Groups(
+        [
+            "commande:read",
+            "commande:write",
+        ]
+    )]
     #[ORM\Column(type: 'datetime')]
     private $date;
 
-    #[ORM\ManyToMany(targetEntity: produit::class, inversedBy: 'commandes')]
+    #[Groups(
+        [
+            "commande:read",
+            "commande:write",
+        ]
+    )]
+    #[ORM\ManyToMany(targetEntity: Produit::class, inversedBy: 'commandes')]
     private $produits;
+    #[Groups(
+        [
+            "commande:read",
+            "commande:write",
+        ]
+    )]
+    #[ORM\ManyToOne(targetEntity: Gestionnaire::class, inversedBy: 'commandes')]
+    private $gestionnaire;
+    #[Groups(
+        [
+            "commande:read",
+            "commande:write",
+        ]
+    )]
+    #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'commandes')]
+    private $client;
+    #[Groups(
+        [
+            "commande:read",
+            "commande:write",
+        ]
+    )]
+    #[ORM\ManyToOne(targetEntity: Livraison::class, inversedBy: 'commandes')]
+    private $livraison;
 
     public function __construct()
     {
@@ -78,6 +146,42 @@ class Commande
     public function removeProduit(produit $produit): self
     {
         $this->produits->removeElement($produit);
+
+        return $this;
+    }
+
+    public function getGestionnaire(): ?Gestionnaire
+    {
+        return $this->gestionnaire;
+    }
+
+    public function setGestionnaire(?Gestionnaire $gestionnaire): self
+    {
+        $this->gestionnaire = $gestionnaire;
+
+        return $this;
+    }
+
+    public function getClient(): ?Client
+    {
+        return $this->client;
+    }
+
+    public function setClient(?Client $client): self
+    {
+        $this->client = $client;
+
+        return $this;
+    }
+
+    public function getLivraison(): ?Livraison
+    {
+        return $this->livraison;
+    }
+
+    public function setLivraison(?Livraison $livraison): self
+    {
+        $this->livraison = $livraison;
 
         return $this;
     }

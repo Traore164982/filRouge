@@ -2,12 +2,13 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use App\Repository\BurgerRepository;
-use Doctrine\Common\Annotations\Annotation\Attributes;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\BurgerRepository;
+use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Doctrine\Common\Annotations\Annotation\Attributes;
 
 #[ORM\Entity(repositoryClass: BurgerRepository::class)]
 #[ApiResource(
@@ -30,7 +31,8 @@ use Doctrine\ORM\Mapping as ORM;
 )]
 class Burger extends Produit
 {
-    #[ORM\OneToMany(mappedBy: 'produit_id', targetEntity: Menu::class)]
+
+    #[ORM\ManyToMany(targetEntity: Menu::class, mappedBy: 'burgers')]
     private $menus;
 
     public function __construct()
@@ -50,7 +52,7 @@ class Burger extends Produit
     {
         if (!$this->menus->contains($menu)) {
             $this->menus[] = $menu;
-            $menu->setProduitId($this);
+            $menu->addBurger($this);
         }
 
         return $this;
@@ -59,10 +61,7 @@ class Burger extends Produit
     public function removeMenu(Menu $menu): self
     {
         if ($this->menus->removeElement($menu)) {
-            // set the owning side to null (unless already changed)
-            if ($menu->getProduitId() === $this) {
-                $menu->setProduitId(null);
-            }
+            $menu->removeBurger($this);
         }
 
         return $this;

@@ -2,15 +2,21 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Entity\Commande;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ProduitRepository;
+use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints as Assert;
+
+
+
 #[ORM\InheritanceType("JOINED")]
 #[ORM\DiscriminatorColumn(name:"type",type:"string")]
-#[ORM\DiscriminatorMap(["complement"=>"Complement","menu"=>"Menu","burger"=>"Burger"])]
+#[ORM\DiscriminatorMap(["menu"=>"Menu","burger"=>"Burger","boisson"=>"Boisson","frites"=>"Frites"])]
 #[ORM\Entity(repositoryClass: ProduitRepository::class)]
 
 #[ApiResource(
@@ -23,41 +29,65 @@ class Produit
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    private $id;
+    #[Groups(
+        [
+            "menu:write",
+            "commande:write"
+        ]
+    )]
+    protected $id;
 
     #[Groups(
         [
             "burger:read",
             "burger:write",
-            "complement:read",
-            "complement:write",
+            "frites:read",
+            "frites:write",
+            "boisson:read:",
+            "boisson:write",
+            "menu:write:self"
         ]
     )]
+
     #[ORM\Column(type: 'string', length: 255)]
-    private $nom;
+    #[Assert\NotBlank(message:"Le nom est Obligatoire")]
+    protected $nom;
     #[Groups(
         [
             "burger:read",
             "burger:write",
-            "complement:read",
-            "complement:write",
+            "frites:read",
+            "frites:write",
+            "boisson:read:",
+            "boisson:write",
+            "menu:write:self"
         ]
     )]
     #[ORM\Column(type: 'integer')]
-    private $prix;
+    #[Assert\NotBlank(message:"Le prix est Obligatoire")]
+    protected $prix;
     #[Groups(
-        [
+        [  
             "burger:read",
             "burger:write",
-            "complement:read",
-            "complement:write",
+            "frites:read",
+            "frites:write",
+            "boisson:read:",
+            "boisson:write",
+            "menu:write:self"
         ]
     )]       
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    private $image;
+    protected $image;
 
     #[ORM\ManyToMany(targetEntity: Commande::class, mappedBy: 'produits')]
-    private $commandes;
+    protected $commandes;
+
+    #[ORM\ManyToOne(targetEntity: Gestionnaire::class, inversedBy: 'produits')]
+    private $gestionnaire;
+
+    #[ORM\Column(type: 'boolean')]
+    private $isEtat=true;
 
     public function __construct()
     {
@@ -128,6 +158,30 @@ class Produit
         if ($this->commandes->removeElement($commande)) {
             $commande->removeProduit($this);
         }
+
+        return $this;
+    }
+
+    public function getGestionnaire(): ?Gestionnaire
+    {
+        return $this->gestionnaire;
+    }
+
+    public function setGestionnaire(?Gestionnaire $gestionnaire): self
+    {
+        $this->gestionnaire = $gestionnaire;
+
+        return $this;
+    }
+
+    public function isIsEtat(): ?bool
+    {
+        return $this->isEtat;
+    }
+
+    public function setIsEtat(bool $isEtat): self
+    {
+        $this->isEtat = $isEtat;
 
         return $this;
     }
