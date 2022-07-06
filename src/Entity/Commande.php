@@ -10,6 +10,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[ApiResource(
     attributes:[
@@ -30,12 +31,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
         "GET","POST"
     ],
     itemOperations:[
-        "PUT","PATCH","GET"
+        "PUT","PATCH","GET","delete"
     ]
 )]
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
 class Commande
 {
+    #[Groups(["livraison:write"])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
@@ -44,7 +46,6 @@ class Commande
     #[Groups(
         [
             "commande:read",
-            "commande:write",
         ]
     )]
     #[ORM\Column(type: 'string', length: 255)]
@@ -53,7 +54,6 @@ class Commande
     #[Groups(
         [
             "commande:read",
-            "commande:write",
         ]
     )]
     #[ORM\Column(type: 'datetime')]
@@ -62,15 +62,6 @@ class Commande
     #[Groups(
         [
             "commande:read",
-            "commande:write",
-        ]
-    )]
-    #[ORM\ManyToMany(targetEntity: Produit::class, inversedBy: 'commandes')]
-    private $produits;
-    #[Groups(
-        [
-            "commande:read",
-            "commande:write",
         ]
     )]
     #[ORM\ManyToOne(targetEntity: Gestionnaire::class, inversedBy: 'commandes')]
@@ -78,7 +69,6 @@ class Commande
     #[Groups(
         [
             "commande:read",
-            "commande:write",
         ]
     )]
     #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'commandes')]
@@ -86,15 +76,24 @@ class Commande
     #[Groups(
         [
             "commande:read",
-            "commande:write",
         ]
     )]
     #[ORM\ManyToOne(targetEntity: Livraison::class, inversedBy: 'commandes')]
     private $livraison;
 
+    #[Groups(
+        [
+            "commande:write",
+        ]
+    )]
+    #[SerializedName('Produits')]
+    #[ORM\OneToMany(mappedBy: 'Commande', targetEntity: LigneCommande::class, cascade:['persist'])]
+    private $ligneCommandes;
+
     public function __construct()
     {
         $this->produits = new ArrayCollection();
+        $this->ligneCommandes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -122,30 +121,6 @@ class Commande
     public function setDate(\DateTimeInterface $date): self
     {
         $this->date = $date;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, produit>
-     */
-    public function getProduits(): Collection
-    {
-        return $this->produits;
-    }
-
-    public function addProduit(produit $produit): self
-    {
-        if (!$this->produits->contains($produit)) {
-            $this->produits[] = $produit;
-        }
-
-        return $this;
-    }
-
-    public function removeProduit(produit $produit): self
-    {
-        $this->produits->removeElement($produit);
 
         return $this;
     }
@@ -182,6 +157,36 @@ class Commande
     public function setLivraison(?Livraison $livraison): self
     {
         $this->livraison = $livraison;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, LigneCommande>
+     */
+    public function getLigneCommandes(): Collection
+    {
+        return $this->ligneCommandes;
+    }
+
+    public function addLigneCommande(LigneCommande $ligneCommande): self
+    {
+        if (!$this->ligneCommandes->contains($ligneCommande)) {
+            $this->ligneCommandes[] = $ligneCommande;
+            $ligneCommande->setCommande($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLigneCommande(LigneCommande $ligneCommande): self
+    {
+        if ($this->ligneCommandes->removeElement($ligneCommande)) {
+            // set the owning side to null (unless already changed)
+            if ($ligneCommande->getCommande() === $this) {
+                $ligneCommande->setCommande(null);
+            }
+        }
 
         return $this;
     }

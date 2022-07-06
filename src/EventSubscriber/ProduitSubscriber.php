@@ -35,7 +35,7 @@ class ProduitSubscriber implements EventSubscriberInterface
         return $user;
     }
     public function prePersist(LifecycleEventArgs $args)
-    {
+    {  
         if ($args->getObject() instanceof Produit) {
         $args->getObject()->setGestionnaire($this->getUser());
         }

@@ -45,6 +45,7 @@ class Client extends User
     #[ORM\Column(type: 'string', length: 255)]
     private $adresse;
 
+    #[Groups(["client:read","client:write"])]
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Commande::class)]
     private $commandes;
 

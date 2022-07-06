@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\LivreurRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ApiResource(
@@ -40,10 +41,12 @@ class Livreur extends User
         $this->roles =["ROLE_LIVREUR"];
         $this->livraisons = new ArrayCollection();
     }
+
     #[Groups(["livreur:read","livreur:write"])]
     #[ORM\Column(type: 'string', length: 255)]
     private $matricule;
 
+    #[ApiSubresource()]
     #[ORM\OneToMany(mappedBy: 'livreur', targetEntity: Livraison::class)]
     private $livraisons;
 

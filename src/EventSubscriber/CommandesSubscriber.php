@@ -37,7 +37,6 @@ class CommandesSubscriber implements EventSubscriberInterface
     }
     public function prePersist(LifecycleEventArgs $args)
     {
-        dd($this->getUser()->getRoles());
         if ($args->getObject() instanceof Commande) {
         $args->getObject()->setClient($this->getUser());
         $args->getObject()->setDate(new DateTime('now'));

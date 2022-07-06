@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20220629162015 extends AbstractMigration
+final class Version20220705095031 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,16 +20,12 @@ final class Version20220629162015 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE menu DROP FOREIGN KEY FK_7D053A934FD8F9C3');
-        $this->addSql('DROP INDEX IDX_7D053A934FD8F9C3 ON menu');
-        $this->addSql('ALTER TABLE menu DROP produit_id_id');
+        $this->addSql('ALTER TABLE ligne_commande ADD prix INT NOT NULL');
     }
 
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE menu ADD produit_id_id INT DEFAULT NULL');
-        $this->addSql('ALTER TABLE menu ADD CONSTRAINT FK_7D053A934FD8F9C3 FOREIGN KEY (produit_id_id) REFERENCES burger (id)');
-        $this->addSql('CREATE INDEX IDX_7D053A934FD8F9C3 ON menu (produit_id_id)');
+        $this->addSql('ALTER TABLE ligne_commande DROP prix');
     }
 }

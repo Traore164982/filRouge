@@ -34,6 +34,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    #[Groups(["livraison:write"])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]

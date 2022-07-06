@@ -10,6 +10,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\Common\Annotations\Annotation\Attributes;
 
+
 #[ORM\Entity(repositoryClass: BurgerRepository::class)]
 #[ApiResource(
     attributes:[
@@ -23,45 +24,54 @@ use Doctrine\Common\Annotations\Annotation\Attributes;
         "groups"=> "burger:write"
     ],
     collectionOperations:[
-        "GET","POST"
+        "GET"/* =>[
+            "security" => "is_granted('IS_ACCESS',object)",
+        ] */,
+        "POST"/* => [
+            "security" => "is_granted('IS_ACCESS',object)",
+            "security_message" => "Vous n'avez pas accés à cette route"
+        ] */
     ],
     itemOperations:[
-        "GET","PUT","PATCH"
+        "GET","PUT","PATCH","delete",
     ]
 )]
 class Burger extends Produit
 {
-
-    #[ORM\ManyToMany(targetEntity: Menu::class, mappedBy: 'burgers')]
-    private $menus;
+    #[ORM\OneToMany(mappedBy: 'Burger', targetEntity: MenuBurger::class)]
+    private $menuBurgers;
 
     public function __construct()
     {
-        $this->menus = new ArrayCollection();
+        parent::__construct();
+        $this->menuBurgers = new ArrayCollection();
     }
 
     /**
-     * @return Collection<int, Menu>
+     * @return Collection<int, MenuBurger>
      */
-    public function getMenus(): Collection
+    public function getMenuBurgers(): Collection
     {
-        return $this->menus;
+        return $this->menuBurgers;
     }
 
-    public function addMenu(Menu $menu): self
+    public function addMenuBurger(MenuBurger $menuBurger): self
     {
-        if (!$this->menus->contains($menu)) {
-            $this->menus[] = $menu;
-            $menu->addBurger($this);
+        if (!$this->menuBurgers->contains($menuBurger)) {
+            $this->menuBurgers[] = $menuBurger;
+            $menuBurger->setBurger($this);
         }
 
         return $this;
     }
 
-    public function removeMenu(Menu $menu): self
+    public function removeMenuBurger(MenuBurger $menuBurger): self
     {
-        if ($this->menus->removeElement($menu)) {
-            $menu->removeBurger($this);
+        if ($this->menuBurgers->removeElement($menuBurger)) {
+            // set the owning side to null (unless already changed)
+            if ($menuBurger->getBurger() === $this) {
+                $menuBurger->setBurger(null);
+            }
         }
 
         return $this;

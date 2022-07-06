@@ -20,8 +20,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: ProduitRepository::class)]
 
 #[ApiResource(
+    collectionOperations:[
+        "GET"
+    ],
     itemOperations:[
-        "GET","PATCH","PUT"
+        "GET"
     ]
 )]
 class Produit
@@ -31,8 +34,8 @@ class Produit
     #[ORM\Column(type: 'integer')]
     #[Groups(
         [
-            "menu:write",
-            "commande:write"
+            "ligne:write",
+            "menu_burger:write",
         ]
     )]
     protected $id;
@@ -45,7 +48,7 @@ class Produit
             "frites:write",
             "boisson:read:",
             "boisson:write",
-            "menu:write:self"
+            
         ]
     )]
 
@@ -60,7 +63,6 @@ class Produit
             "frites:write",
             "boisson:read:",
             "boisson:write",
-            "menu:write:self"
         ]
     )]
     #[ORM\Column(type: 'integer')]
@@ -74,14 +76,11 @@ class Produit
             "frites:write",
             "boisson:read:",
             "boisson:write",
-            "menu:write:self"
         ]
     )]       
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     protected $image;
 
-    #[ORM\ManyToMany(targetEntity: Commande::class, mappedBy: 'produits')]
-    protected $commandes;
 
     #[ORM\ManyToOne(targetEntity: Gestionnaire::class, inversedBy: 'produits')]
     private $gestionnaire;
@@ -89,9 +88,16 @@ class Produit
     #[ORM\Column(type: 'boolean')]
     private $isEtat=true;
 
+    
+    #[ORM\OneToMany(mappedBy: 'Produit', targetEntity: LigneCommande::class)]
+    private $ligneCommandes;
+
+
+
     public function __construct()
     {
         $this->commandes = new ArrayCollection();
+        $this->ligneCommandes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -135,32 +141,6 @@ class Produit
         return $this;
     }
 
-    /**
-     * @return Collection<int, Commande>
-     */
-    public function getCommandes(): Collection
-    {
-        return $this->commandes;
-    }
-
-    public function addCommande(Commande $commande): self
-    {
-        if (!$this->commandes->contains($commande)) {
-            $this->commandes[] = $commande;
-            $commande->addProduit($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCommande(Commande $commande): self
-    {
-        if ($this->commandes->removeElement($commande)) {
-            $commande->removeProduit($this);
-        }
-
-        return $this;
-    }
 
     public function getGestionnaire(): ?Gestionnaire
     {
@@ -182,6 +162,36 @@ class Produit
     public function setIsEtat(bool $isEtat): self
     {
         $this->isEtat = $isEtat;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, LigneCommande>
+     */
+    public function getLigneCommandes(): Collection
+    {
+        return $this->ligneCommandes;
+    }
+
+    public function addLigneCommande(LigneCommande $ligneCommande): self
+    {
+        if (!$this->ligneCommandes->contains($ligneCommande)) {
+            $this->ligneCommandes[] = $ligneCommande;
+            $ligneCommande->setProduit($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLigneCommande(LigneCommande $ligneCommande): self
+    {
+        if ($this->ligneCommandes->removeElement($ligneCommande)) {
+            // set the owning side to null (unless already changed)
+            if ($ligneCommande->getProduit() === $this) {
+                $ligneCommande->setProduit(null);
+            }
+        }
 
         return $this;
     }

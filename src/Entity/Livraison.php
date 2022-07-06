@@ -7,6 +7,7 @@ use App\Repository\LivraisonRepository;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 
 #[ApiResource(
@@ -40,13 +41,18 @@ class Livraison
     private $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    private $etat;
+    private $etat="En Attente";
 
+    #[Groups(["livraison:read","livraison:write"])]
     #[ORM\OneToMany(mappedBy: 'livraison', targetEntity: Commande::class)]
     private $commandes;
 
+    #[Groups(["livraison:read","livraison:write"])]
     #[ORM\ManyToOne(targetEntity: Livreur::class, inversedBy: 'livraisons')]
     private $livreur;
+
+    #[ORM\ManyToOne(targetEntity: Zone::class, inversedBy: 'livraisons')]
+    private $zone;
 
     public function __construct()
     {
@@ -108,6 +114,18 @@ class Livraison
     public function setLivreur(?Livreur $livreur): self
     {
         $this->livreur = $livreur;
+
+        return $this;
+    }
+
+    public function getZone(): ?Zone
+    {
+        return $this->zone;
+    }
+
+    public function setZone(?Zone $zone): self
+    {
+        $this->zone = $zone;
 
         return $this;
     }
